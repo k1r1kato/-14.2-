@@ -1,4 +1,0 @@
-C:\Users\vikto\SimpleApiServer\obj\Debug\net10.0\SimpleApiServer.GeneratedMSBuildEditorConfig.editorconfig
-C:\Users\vikto\SimpleApiServer\obj\Debug\net10.0\SimpleApiServer.AssemblyInfoInputs.cache
-C:\Users\vikto\SimpleApiServer\obj\Debug\net10.0\SimpleApiServer.AssemblyInfo.cs
-C:\Users\vikto\SimpleApiServer\obj\Debug\net10.0\SimpleApiServer.csproj.CoreCompileInputs.cache
