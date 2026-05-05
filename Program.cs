@@ -70,4 +70,4 @@ void WriteJson(HttpListenerResponse response, string json, int status)
 
     using var stream = response.OutputStream;
     stream.Write(buffer, 0, buffer.Length);
-}
+}// Временный комментарий
