@@ -17,152 +17,47 @@ while (true)
     var request = context.Request;
     var response = context.Response;
 
-    try
+    if (request.HttpMethod == "GET" && request.Url!.AbsolutePath == "/api/tasks")
     {
-        if (request.HttpMethod == "GET" && request.Url!.AbsolutePath == "/api/tasks")
+        string json = JsonSerializer.Serialize(tasks);
+        WriteJson(response, json, 200);
+    }
+
+    else if (request.HttpMethod == "POST" && request.Url!.AbsolutePath == "/api/tasks")
+    {
+        string body;
+
+        using (var reader = new StreamReader(request.InputStream))
         {
-            WriteJson(response, JsonSerializer.Serialize(tasks), 200);
+            body = reader.ReadToEnd();
         }
 
-        else if (request.HttpMethod == "POST" && request.Url!.AbsolutePath == "/api/tasks")
+        var data = JsonSerializer.Deserialize<CreateTaskRequest>(body);
+
+        if (data == null || string.IsNullOrWhiteSpace(data.Title))
         {
-            HandleCreateTask(request, response);
+            WriteJson(response, "{\"error\":\"Title required\"}", 400);
+            return;
         }
 
-        else if (request.HttpMethod == "PUT" && request.Url!.AbsolutePath.StartsWith("/api/tasks/"))
+        var task = new TaskItem
         {
-            HandleUpdateTask(request, response);
-        }
-
-        else
-        {
-            WriteJson(response, "{\"error\":\"Not found\"}", 404);
-        }
-    }
-    catch (Exception ex)
-    {
-        WriteJson(response, JsonSerializer.Serialize(new { error = ex.Message }), 500);
-    }
-}
-
-void HandleCreateTask(HttpListenerRequest request, HttpListenerResponse response)
-{
-    string body;
-
-    using (var reader = new StreamReader(request.InputStream, request.ContentEncoding))
-    {
-        body = reader.ReadToEnd();
-    }
-
-    CreateTaskRequest? data;
-
-    try
-    {
-        data = JsonSerializer.Deserialize<CreateTaskRequest>(body);
-    }
-    catch
-    {
-        WriteJson(response, "{\"error\":\"Некорректный JSON\"}", 400);
-        return;
-    }
-
-    var errors = new List<object>();
-
-    if (string.IsNullOrWhiteSpace(data?.Title))
-        errors.Add(new { field = "Title", message = "Название обязательно" });
-
-    else if (data.Title.Length > 200)
-        errors.Add(new { field = "Title", message = "Название не более 200 символов" });
-
-    if (data?.Priority is int p && (p < 1 || p > 5))
-        errors.Add(new { field = "Priority", message = "Приоритет от 1 до 5" });
-
-    if (data?.Description?.Length > 1000)
-        errors.Add(new { field = "Description", message = "Описание не более 1000 символов" });
-
-    if (errors.Count > 0)
-    {
-        var errorResponse = new
-        {
-            error = "Ошибка валидации",
-            errors
+            Id = nextId++,
+            Title = data.Title,
+            Description = data.Description,
+            Priority = data.Priority ?? 1,
+            IsCompleted = data.IsCompleted ?? false
         };
 
-        WriteJson(response, JsonSerializer.Serialize(errorResponse), 400);
-        return;
+        tasks.Add(task);
+
+        WriteJson(response, JsonSerializer.Serialize(task), 201);
     }
 
-    var task = new TaskItem
+    else
     {
-        Id = nextId++,
-        Title = data!.Title!,
-        Description = data.Description,
-        Priority = data.Priority ?? 1,
-        IsCompleted = data.IsCompleted ?? false
-    };
-
-    tasks.Add(task);
-
-    WriteJson(response, JsonSerializer.Serialize(task), 201);
-}
-
-void HandleUpdateTask(HttpListenerRequest request, HttpListenerResponse response)
-{
-    var parts = request.Url!.AbsolutePath.Split('/');
-    int id = int.Parse(parts[3]);
-
-    var task = tasks.FirstOrDefault(t => t.Id == id);
-
-    if (task == null)
-    {
-        WriteJson(response, "{\"error\":\"Task not found\"}", 404);
-        return;
+        WriteJson(response, "{\"error\":\"Not found\"}", 404);
     }
-
-    string body;
-
-    using (var reader = new StreamReader(request.InputStream, request.ContentEncoding))
-    {
-        body = reader.ReadToEnd();
-    }
-
-    CreateTaskRequest? data;
-
-    try
-    {
-        data = JsonSerializer.Deserialize<CreateTaskRequest>(body);
-    }
-    catch
-    {
-        WriteJson(response, "{\"error\":\"Некорректный JSON\"}", 400);
-        return;
-    }
-
-    var errors = new List<object>();
-
-    if (string.IsNullOrWhiteSpace(data?.Title))
-        errors.Add(new { field = "Title", message = "Название обязательно" });
-
-    if (data?.Priority is int p && (p < 1 || p > 5))
-        errors.Add(new { field = "Priority", message = "Приоритет от 1 до 5" });
-
-    if (errors.Count > 0)
-    {
-        var errorResponse = new
-        {
-            error = "Ошибка валидации",
-            errors
-        };
-
-        WriteJson(response, JsonSerializer.Serialize(errorResponse), 400);
-        return;
-    }
-
-    task.Title = data!.Title!;
-    task.Description = data.Description;
-    task.Priority = data.Priority ?? task.Priority;
-
-    WriteJson(response, JsonSerializer.Serialize(task), 200);
 }
 
 void WriteJson(HttpListenerResponse response, string json, int status)
