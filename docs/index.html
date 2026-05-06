@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Документация SimpleApiServer</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: auto;
+            padding: 20px;
+        }
+
+        code {
+            background: #f4f4f4;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+
+        .method {
+            font-weight: bold;
+            color: #d73a49;
+        }
+    </style>
+</head>
+<body>
+    <h1>Документация API (ЛР 15.2)</h1>
+    <p>Базовый URL: <code>http://localhost:5005/api/</code></p>
+
+    <h2>Эндпоинты</h2>
+    <ul>
+        <li><span class="method">GET</span> <code>/tasks</code> — Получить список всех задач.</li>
+        <li>
+            <span class="method">POST</span> <code>/tasks</code> — Создать новую задачу.
+            <br>Body: <code>{"title": "Task Name", "priority": 3}</code>
+        </li>
+    </ul>
+</body>
+</html>
