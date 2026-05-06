@@ -4,7 +4,7 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Text.Json;
-
+// Финальная версия ЛР 15.2
 namespace SimpleApiServer
 {
     class Program
